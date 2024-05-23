@@ -21,6 +21,12 @@ vault_auth() {
   #   sensitive information itself, so the role name to use can either be passed via BUILDKITE_PLUGIN_VAULT_SECRETS_AUTH_AWS_ROLE_NAME
   #   or will fall back to using the name of the IAM role that the instance is using. 
 
+  ##  Kubernetes Authentication
+  #   Kubernetes uses the service account token that is mounted into the pod.
+  #   If auth-kubernetes-role-name is not specified, "service_buildkite" is assumed.
+  #     This will often need to be customized for the naming scheme and service name used in a given organization.
+  #   If auth-path is not specified, "kubernetes" is assumed.
+  #     This will be typically be different if there are more than one kubernetes cluster using the same vault.
 
   case "${BUILDKITE_PLUGIN_VAULT_SECRETS_AUTH_METHOD:-}" in
     
@@ -39,7 +45,8 @@ vault_auth() {
         
         # export the vault token to be used for this job - this command writes to the auth/approle/login endpoint
         # on success, vault will return the token which we export as VAULT_TOKEN for this shell
-        if ! VAULT_TOKEN=$(vault write -field=token -address="$server" auth/approle/login \
+        AUTH_PATH="${BUILDKITE_PLUGIN_VAULT_SECRETS_AUTH_PATH:-approle}"
+        if ! VAULT_TOKEN=$(vault write -field=token -address="$server" auth/${AUTH_PATH}/login \
         role_id="$BUILDKITE_PLUGIN_VAULT_SECRETS_AUTH_ROLE_ID" \
         secret_id="${secret_var:-}"); then
           echo "+++🚨 Failed to get vault token"
@@ -97,7 +104,8 @@ vault_auth() {
           exit 1
         fi
 
-        if ! VAULT_TOKEN=$(vault write auth/jwt/login -address="$server"  jwt="${jwt_var:-}"); then
+        AUTH_PATH="${BUILDKITE_PLUGIN_VAULT_SECRETS_AUTH_PATH:-jwt}"
+        if ! VAULT_TOKEN=$(vault write auth/${AUTH_PATH}/login -address="$server"  jwt="${jwt_var:-}"); then
           echo "+++🚨 Failed to get vault token"
           exit 1
         fi
@@ -105,6 +113,32 @@ vault_auth() {
         export VAULT_TOKEN
 
         echo "Successfully authenticated with JWT"
+
+        return "${PIPESTATUS[0]}"
+    ;;
+
+
+    kubernetes)
+
+        SA_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+        if [ -z "${SA_TOKEN}" ]; then
+          echo "+++🚨 No service account token found"
+          exit 1
+        fi
+
+        AUTH_PATH="${BUILDKITE_PLUGIN_VAULT_SECRETS_AUTH_PATH:-kubernetes}"
+        AUTH_ROLE="${BUILDKITE_PLUGIN_VAULT_SECRETS_AUTH_KUBERNETES_ROLE_NAME:-service_buildkite}
+
+        echo "--- Logging into Vault using Kubernetes service account token... (role: ${AUTH_ROLE}, path: ${AUTH_PATH})"
+
+        if ! VAULT_TOKEN=$(vault write auth/${AUTH_PATH}/login -address="$server" jwt="${SA_TOKEN}"); then
+          echo "+++🚨 Failed to get vault token"
+          exit 1
+        fi
+
+        export VAULT_TOKEN
+
+        echo "Successfully authenticated!"
 
         return "${PIPESTATUS[0]}"
     ;;

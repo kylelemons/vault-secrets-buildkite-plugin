@@ -24,6 +24,7 @@ configuration:
             - 'approle'
             - 'aws'
             - 'jwt'
+            - 'kubernetes'
             - ''
         role-id:
           type: string
@@ -32,6 +33,10 @@ configuration:
         aws-role-name:
           type: string
         jwt-env:
+          type: string
+        kubernetes-role-name:
+          type: string
+        path:
           type: string
     secrets:
       type: array
