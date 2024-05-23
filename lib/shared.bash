@@ -127,19 +127,20 @@ vault_auth() {
 
     kubernetes)
 
-        SA_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
-        if [ -z "${SA_TOKEN}" ]; then
-          echo "+++🚨 No service account token found"
+        jwt=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+        if [ -z "${jwt}" ]; then
+          echo "+++ 🚨 No service account token found (are you running in a kubernetes pod?)"
           exit 1
         fi
 
         auth_path="${BUILDKITE_PLUGIN_VAULT_SECRETS_AUTH_PATH:-kubernetes}"
         auth_role="${BUILDKITE_PLUGIN_VAULT_SECRETS_AUTH_KUBERNETES_ROLE_NAME:-service_buildkite}"
 
-        echo "--- Logging into Vault using Kubernetes service account token... (role: ${auth_role}, path: ${auth_path})"
+        echo "--- Logging into Vault using Kubernetes service account token"
+        echo "Logging in... role=${auth_role} path=${auth_path}"
 
-        if ! VAULT_TOKEN=$(vault write -address="$server" "auth/${auth_path}/login" jwt="${SA_TOKEN}"); then
-          echo "+++🚨 Failed to get vault token"
+        if ! VAULT_TOKEN=$(vault write -address="$server" "auth/${auth_path}/login" role="${auth_role}" jwt="${jwt}"); then
+          echo "+++ 🚨 Failed to get vault token"
           exit 1
         fi
 
