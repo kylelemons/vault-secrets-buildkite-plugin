@@ -147,6 +147,7 @@ vault_auth() {
           echo "+++ 🚨 Failed to get vault token"
           exit 1
         fi
+        echo "DEBUG: VAULT_TOKEN=...${#VAULT_TOKEN} bytes..."
 
         export VAULT_TOKEN
 
