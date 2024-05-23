@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set -ueo pipefail
+
+echo "--- Debugging checkout environment variables"
+env | grep GIT
