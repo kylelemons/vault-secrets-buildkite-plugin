@@ -88,6 +88,9 @@ vault_path="${VAULT_BASE_PATH:-}"
 [ -n "${BUILDKITE_PIPELINE_SLUG:-}" ] && vault_path="${vault_path}/${BUILDKITE_PIPELINE_SLUG}"
 
 if [[ -n "$vault_server" ]] ; then
+  # Some versions of the Vault CLI seem to be very unhappy if this is not set, even if you pass -address
+  export VAULT_ADDR="${vault_server}"
+
   echo "~~~ Authenticating to :vault: $vault_server" >&2;
   vault_auth "${vault_server:-}"
   echo "~~~ Downloading secrets from :vault: $vault_server" >&2;
