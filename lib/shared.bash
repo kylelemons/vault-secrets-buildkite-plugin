@@ -142,7 +142,6 @@ vault_auth() {
         echo "  Vault role:   ${auth_role}"
         echo "  Auth path:    ${auth_path}"
 
-        echo "DEBUG: vault write -address=${server} auth/${auth_path}/login role=${auth_role} jwt=...${#jwt} bytes..."
         if ! VAULT_TOKEN=$(vault write -address="${server}" -field=token "auth/${auth_path}/login" role="${auth_role}" jwt="${jwt}"); then
           echo "+++ 🚨 Failed to get vault token"
           exit 1
