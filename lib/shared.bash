@@ -33,7 +33,6 @@ vault_auth() {
     wget https://releases.hashicorp.com/vault/1.16.2/vault_1.16.2_linux_amd64.zip
     unzip vault_1.16.2_linux_amd64.zip && rm vault_1.16.2_linux_amd64.zip
     chmod +x ./vault && mv ./vault /usr/local/bin/vault
-    exit 1
   fi
 
   case "${BUILDKITE_PLUGIN_VAULT_SECRETS_AUTH_METHOD:-}" in
