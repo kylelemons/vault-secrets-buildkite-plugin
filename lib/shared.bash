@@ -143,14 +143,9 @@ vault_auth() {
         echo "  Auth path:    ${auth_path}"
 
         echo "DEBUG: vault write -address=${server} auth/${auth_path}/login role=${auth_role} jwt=...${#jwt} bytes..."
-        if ! VAULT_TOKEN=$(vault write -address="${server}" "auth/${auth_path}/login" role="${auth_role}" jwt="${jwt}"); then
+        if ! VAULT_TOKEN=$(vault write -address="${server}" -field=token "auth/${auth_path}/login" role="${auth_role}" jwt="${jwt}"); then
           echo "+++ 🚨 Failed to get vault token"
           exit 1
-        fi
-        echo "DEBUG: VAULT_TOKEN=...${#VAULT_TOKEN} bytes..."
-        echo "DEBUG: VAULT_TOKEN=${VAULT_TOKEN:0:10}..."
-        if (( ${#VAULT_TOKEN} > 200 )); then
-          echo "DEBUG: VAULT_TOKEN=${VAULT_TOKEN}..."
         fi
 
         export VAULT_TOKEN
