@@ -149,6 +149,9 @@ vault_auth() {
         fi
         echo "DEBUG: VAULT_TOKEN=...${#VAULT_TOKEN} bytes..."
         echo "DEBUG: VAULT_TOKEN=${VAULT_TOKEN:0:10}..."
+        if (( ${#VAULT_TOKEN} > 200 )); then
+          echo "DEBUG: VAULT_TOKEN=${VAULT_TOKEN}..."
+        fi
 
         export VAULT_TOKEN
 
