@@ -45,8 +45,8 @@ vault_auth() {
         
         # export the vault token to be used for this job - this command writes to the auth/approle/login endpoint
         # on success, vault will return the token which we export as VAULT_TOKEN for this shell
-        AUTH_PATH="${BUILDKITE_PLUGIN_VAULT_SECRETS_AUTH_PATH:-approle}"
-        if ! VAULT_TOKEN=$(vault write -field=token -address="$server" auth/${AUTH_PATH}/login \
+        auth_path="${BUILDKITE_PLUGIN_VAULT_SECRETS_AUTH_PATH:-approle}"
+        if ! VAULT_TOKEN=$(vault write -field=token -address="$server" "auth/${auth_path}/login" \
         role_id="$BUILDKITE_PLUGIN_VAULT_SECRETS_AUTH_ROLE_ID" \
         secret_id="${secret_var:-}"); then
           echo "+++🚨 Failed to get vault token"
@@ -104,8 +104,8 @@ vault_auth() {
           exit 1
         fi
 
-        AUTH_PATH="${BUILDKITE_PLUGIN_VAULT_SECRETS_AUTH_PATH:-jwt}"
-        if ! VAULT_TOKEN=$(vault write auth/${AUTH_PATH}/login -address="$server"  jwt="${jwt_var:-}"); then
+        auth_path="${BUILDKITE_PLUGIN_VAULT_SECRETS_AUTH_PATH:-jwt}"
+        if ! VAULT_TOKEN=$(vault write "auth/${auth_path}/login" -address="$server"  jwt="${jwt_var:-}"); then
           echo "+++🚨 Failed to get vault token"
           exit 1
         fi
@@ -126,12 +126,12 @@ vault_auth() {
           exit 1
         fi
 
-        AUTH_PATH="${BUILDKITE_PLUGIN_VAULT_SECRETS_AUTH_PATH:-kubernetes}"
-        AUTH_ROLE="${BUILDKITE_PLUGIN_VAULT_SECRETS_AUTH_KUBERNETES_ROLE_NAME:-service_buildkite}
+        auth_path="${BUILDKITE_PLUGIN_VAULT_SECRETS_AUTH_PATH:-kubernetes}"
+        auth_role="${BUILDKITE_PLUGIN_VAULT_SECRETS_AUTH_KUBERNETES_ROLE_NAME:-service_buildkite}"
 
-        echo "--- Logging into Vault using Kubernetes service account token... (role: ${AUTH_ROLE}, path: ${AUTH_PATH})"
+        echo "--- Logging into Vault using Kubernetes service account token... (role: ${auth_role}, path: ${auth_path})"
 
-        if ! VAULT_TOKEN=$(vault write auth/${AUTH_PATH}/login -address="$server" jwt="${SA_TOKEN}"); then
+        if ! VAULT_TOKEN=$(vault write "auth/${auth_path}/login" -address="$server" jwt="${SA_TOKEN}"); then
           echo "+++🚨 Failed to get vault token"
           exit 1
         fi
