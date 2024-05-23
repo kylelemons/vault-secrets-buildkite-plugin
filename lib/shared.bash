@@ -137,9 +137,13 @@ vault_auth() {
         auth_role="${BUILDKITE_PLUGIN_VAULT_SECRETS_AUTH_KUBERNETES_ROLE_NAME:-service_buildkite}"
 
         echo "--- Logging into Vault using Kubernetes service account token"
-        echo "Logging in... role=${auth_role} path=${auth_path}"
+        echo "Logging in:"
+        echo "  Vault server: ${server}"
+        echo "  Vault role:   ${auth_role}"
+        echo "  Auth path:    ${auth_path}"
 
-        if ! VAULT_TOKEN=$(vault write -address="$server" "auth/${auth_path}/login" role="${auth_role}" jwt="${jwt}"); then
+        echo "DEBUG: vault write -address=${server} auth/${auth_path}/login role=${auth_role} jwt=...${#jwt} bytes..."
+        if ! VAULT_TOKEN=$(vault write -address="${server}" "auth/${auth_path}/login" role="${auth_role}" jwt="${jwt}"); then
           echo "+++ 🚨 Failed to get vault token"
           exit 1
         fi
