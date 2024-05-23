@@ -148,7 +148,7 @@ vault_auth() {
           exit 1
         fi
         echo "DEBUG: VAULT_TOKEN=...${#VAULT_TOKEN} bytes..."
-        echo "DEBUG: VAULT_TOKEN=${#VAULT_TOKEN:0:10}..."
+        echo "DEBUG: VAULT_TOKEN=${VAULT_TOKEN:0:10}..."
 
         export VAULT_TOKEN
 
