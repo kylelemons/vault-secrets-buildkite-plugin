@@ -4,3 +4,6 @@ set -ueo pipefail
 
 echo "--- Debugging checkout environment variables"
 env | grep GIT
+
+set -x
+${GIT_CONFIG_PARAMETERS/credential.helper=/}
